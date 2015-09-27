@@ -55,7 +55,7 @@ public class SimpleDynamoProvider extends ContentProvider {
     static final int DATABASE_VERSION = 1;
     public static boolean isRecoveredFully = true;
 
-   static final String TAG = SimpleDynamoProvider.class.getSimpleName();
+    static final String TAG = SimpleDynamoProvider.class.getSimpleName();
 
     static final String DATABASE_NAME = "DynamoDB";
 
@@ -78,10 +78,8 @@ public class SimpleDynamoProvider extends ContentProvider {
 
     public static Cursor globalCursor;
     public static Cursor globalCursorForParticularOutside;
-    public static Cursor globalCursorforRecovery;
 
     public static boolean gotAllVotes;
-    public static boolean gotAllVotesForRecover;
 
     public static int voteCount = 0;
     public static int voteCount1 = 0;
@@ -89,7 +87,6 @@ public class SimpleDynamoProvider extends ContentProvider {
     public static int highestVersion = 0;
 
     public static String intermediateAllResults = "";
-    public static String intermediateAllResultsforRecovery = "";
     public static long time = 0;
     public static int i = 0;
     public static String universalKey = "";
@@ -108,15 +105,11 @@ public class SimpleDynamoProvider extends ContentProvider {
 
 
         public DBHelper(Context context) {
-            // TODO Auto-generated constructor stub
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-
-            // TODO Auto-generated method stub
 
             db.execSQL(CREATE_TABLE);
         }
@@ -150,7 +143,6 @@ public class SimpleDynamoProvider extends ContentProvider {
             //We need to check for * now
             if (selection.equals("\"*\"")) {
 
-                // db.rawQuery("SELECT * FROM message_tbl;", null);
                 for (String i : allPorts) {
 
                     Message deleteAll = new Message();
@@ -216,7 +208,6 @@ public class SimpleDynamoProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -261,7 +252,7 @@ public class SimpleDynamoProvider extends ContentProvider {
             insertToPass.uri = uri.toString();
             Log.e(TAG, "Insert Block:1 Forward Request to actual key location" + currentKey + " to the port" + insertToPass.sendPort);
 
-           // new QueryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, insertToPass);
+            // new QueryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, insertToPass);
             new Thread(new ClientThread(insertToPass)).start();
 
 
@@ -292,7 +283,7 @@ public class SimpleDynamoProvider extends ContentProvider {
             insertToReplica2.uri = uri.toString();
             Log.e(TAG, "Insert Block:1 Forward Request to Replica 2, key is" + currentKey + " value is" + currentValue + "sending to the port" + insertToReplica2.sendPort);
 
-           // new QueryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, insertToReplica2);
+            // new QueryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, insertToReplica2);
             new Thread(new ClientThread(insertToReplica2)).start();
 
         } catch (NoSuchAlgorithmException e) {
@@ -312,22 +303,20 @@ public class SimpleDynamoProvider extends ContentProvider {
         try {
             Log.e(TAG,"Line one of Oncreate");
             ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
-            // serverSocket.setReuseAddress(true);
             new ServerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, serverSocket);
             Log.e(TAG,"Call for ServerTask ended");
 
-        TelephonyManager tel = (TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE);
-        portStr = tel.getLine1Number().substring(tel.getLine1Number().length() - 4);
-        myPort = String.valueOf((Integer.parseInt(portStr) * 2));
+            TelephonyManager tel = (TelephonyManager) getContext().getSystemService(Context.TELEPHONY_SERVICE);
+            portStr = tel.getLine1Number().substring(tel.getLine1Number().length() - 4);
+            myPort = String.valueOf((Integer.parseInt(portStr) * 2));
             Log.e(TAG,"portstr and myport calculated");
 
-        //Create a Tree map
+            //Create a Tree map
             Log.e(TAG,"calling opening clietntakt");
 
-        new OpeningClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, null);
-        //Server Task that listens always
+            new OpeningClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, null);
+            //Server Task that listens always
             Log.e(TAG,"end of calling clienttask, done with oncreate");
-            // SystemClock.sleep(1000);
 
             return true;
 
@@ -336,8 +325,6 @@ public class SimpleDynamoProvider extends ContentProvider {
             Log.e(TAG, "Can't create a ServerSocket Booh!" + Log.getStackTraceString(e));
             return false;
         }
-
-        //return false;
     }
 
     private class OpeningClientTask extends AsyncTask<Message, Void, Void> {
@@ -356,7 +343,7 @@ public class SimpleDynamoProvider extends ContentProvider {
             Log.e(TAG, "In: onCreate() Start the PARTY" + i++);
 
             db1 = new DBHelper(getContext());
-   //         SQLiteDatabase db = db1.getWritableDatabase();
+            //         SQLiteDatabase db = db1.getWritableDatabase();
             if (isRecovery) {
                 Thread one = new Thread() {
 
@@ -387,10 +374,6 @@ public class SimpleDynamoProvider extends ContentProvider {
 
         try {
             Log.e(TAG,"In query : "+selection);
-       /*    if (!isRecoveredFully) {
-                SystemClock.sleep(1000);
-               Log.e(TAG,"Slept coz it was recovering");
-            }*/
             SQLiteDatabase db = db1.getReadableDatabase();
             SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
             queryBuilder.setTables(TABLE_NAME);
@@ -406,17 +389,9 @@ public class SimpleDynamoProvider extends ContentProvider {
                     forwardQueryToGetVote1.selection = selection;
                     forwardQueryToGetVote1.sendPort = Integer.toString(Integer.valueOf(i) * 2);
                     Log.e(TAG, "In Query: sending to all ports and the key is" + selection);
-                   // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, forwardQueryToGetVote1);
                     new Thread(new ClientThread(forwardQueryToGetVote1)).start();
 
                 }
-                // gotAllVotes = true;
-
-/*                while (gotAllVotes) {
-
-
-                }*/
-
                 SystemClock.sleep(2500);
                 Log.e(TAG, "In Query:After sleep the vote count is:"+ voteCount);
 
@@ -433,69 +408,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                 Log.e(TAG, "Count is: @ " + cursor.getCount());
                 return cursor;
 
-
-
-               /* voteCount=0;
-                intermediateAllResults="";
-                String currentKeyLocation = portStr;
-                String nextNode = getNextNode(genHash(currentKeyLocation));
-                String previousNode = getPreviousNode(genHash(currentKeyLocation));
-
-                Message forwardQueryToGetVote1 = new Message();
-                forwardQueryToGetVote1.OriginPort = portStr;
-                forwardQueryToGetVote1.queryOrigin = myPort;
-                forwardQueryToGetVote1.type = 11;
-                forwardQueryToGetVote1.selection = selection;
-                forwardQueryToGetVote1.sendPort = Integer.toString(Integer.valueOf(currentKeyLocation) * 2);
-
-                Log.e(TAG, " @ In Query: sending to myself and the key is" + selection + " KEYLOCATION: " + currentKeyLocation);
-              // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, forwardQueryToGetVote1);
-                new Thread(new ClientThread(forwardQueryToGetVote1)).start();
-
-
-                //send to next
-                Message forwardQueryToGetVote2 = new Message();
-                forwardQueryToGetVote2.OriginPort = portStr;
-                forwardQueryToGetVote2.queryOrigin = myPort;
-                forwardQueryToGetVote2.type = 11;
-                forwardQueryToGetVote2.selection = selection;
-                forwardQueryToGetVote2.sendPort = Integer.toString(Integer.valueOf(nextNode) * 2);
-                Log.e(TAG, "@ In Query: sending to next port" + nextNode + " and the key is" + selection);
-               // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, forwardQueryToGetVote2);
-                new Thread(new ClientThread(forwardQueryToGetVote2)).start();
-
-                //send to previous
-                Message forwardQueryToGetVote3 = new Message();
-                forwardQueryToGetVote3.OriginPort = portStr;
-                forwardQueryToGetVote3.queryOrigin = myPort;
-                forwardQueryToGetVote3.type = 11;
-                forwardQueryToGetVote3.selection = selection;
-                forwardQueryToGetVote3.sendPort = Integer.toString(Integer.valueOf(previousNode) * 2);
-                Log.e(TAG, "@ In Query: sending to previous port" + previousNode + " and the key is" + selection);
-                //new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, forwardQueryToGetVote3);
-                new Thread(new ClientThread(forwardQueryToGetVote3)).start();
-
-
-                Log.e(TAG, "Got @ and returning results from myself");
-
-                SystemClock.sleep(1500);
-                Log.e(TAG, "Vote Count final after 2500 wait @" + voteCount);
-                if(voteCount==0) {
-                    if(!isRecoveredFully){
-                      SystemClock.sleep(800);
-                    }
-                    cursor = db.rawQuery("SELECT key,value FROM message_tbl", null);
-                    Log.e(TAG, "Count is: @ " + cursor.getCount());
-                    return cursor;
-                }
-                Log.e(TAG, "Vote Count final for @" + voteCount);
-                while(!(voteCount>=2)){
-
-                }
-
-                //Log.e(TAG, "The query result for the selection" + selection + "returns following" + ConvertCursorToString(cursor));
-                return globalCursor;*/
-
             }
 
             Log.e(TAG, "Got a ? Query to me: " + portStr+"The key is:"+selection);
@@ -505,31 +417,7 @@ public class SimpleDynamoProvider extends ContentProvider {
             String nextToNextNode = getNextToNextNode(genHash(currentKeyLocation));
             Log.e(TAG, "In Query: The key:" + selection + " is inside the AVD:" + currentKeyLocation);
 
-       /*     if (currentKeyLocation.equals(portStr) || nextNode.equals(portStr) || nextToNextNode.equals(portStr) && isRecoveredFully) {
-
-
-                String newSelection = "key='" + selection + "'";
-                //search key logic
-                Cursor cursorForParticular = queryBuilder.query(db, new String[]{"key", "value"}, newSelection,
-                        null, null, null, null);
-
-                Log.e(TAG, "the key" + selection + " belongs to:" + currentKeyLocation + "And im either of the three:" + portStr + " the keyval within me is:" + ConvertCursorToStringForKeyVal(cursorForParticular));
-
-                return cursorForParticular;
-            } else {*/
-              /*  while(!isRecoveredFully){
-
-                }*/
-            //   Cursor tempCur = null;
             Log.e(TAG, "Forwarding series of messages to get results :" + selection);
-           /*     if (KeyValPairsInserted.containsKey(selection)) {
-                    String tempVal = KeyValPairsInserted.get(selection);
-                    tempCur = convertMapToCursorForKeyVal(convertStringToMapForKeyVal(selection + "," + tempVal));
-                    // return tempCur;
-                }*/
-            //send to original port
-
-            //SystemClock.sleep(1000);
             KeyValPairsSeen.remove(selection);
             keyToHighestVersionSoFar.remove(selection);
             keyToNumberOfVotesSoFar.remove(selection);
@@ -543,7 +431,6 @@ public class SimpleDynamoProvider extends ContentProvider {
             forwardQueryToGetVote1.queryNextNode = Integer.toString(Integer.valueOf(nextNode) * 2);
             forwardQueryToGetVote1.queryNextToNextNode = Integer.toString(Integer.valueOf(nextToNextNode) * 2);
             Log.e(TAG, "In Query: sending to original port and the key is" + selection + " KEYLOCATION: " + currentKeyLocation);
-           // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, forwardQueryToGetVote1);
             new Thread(new ClientThread(forwardQueryToGetVote1)).start();
 
             //send to replica 1
@@ -557,22 +444,9 @@ public class SimpleDynamoProvider extends ContentProvider {
             forwardQueryToGetVote2.queryNextNode = Integer.toString(Integer.valueOf(nextToNextNode) * 2);
             forwardQueryToGetVote2.queryNextToNextNode = Integer.toString(Integer.valueOf(nextToNextNode) * 2);
             Log.e(TAG, "In Query: sending to replica1 port" + nextNode + " and the key is" + selection);
-           // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, forwardQueryToGetVote2);
             new Thread(new ClientThread(forwardQueryToGetVote2)).start();
-/*
-                //send to replica 2
-                Message forwardQueryToGetVote3 = new Message();
-                forwardQueryToGetVote3.OriginPort = myPort;
-                forwardQueryToGetVote3.queryOrigin = myPort;
-                forwardQueryToGetVote3.type = 3;
-                forwardQueryToGetVote3.selection = selection;
-                forwardQueryToGetVote3.sendPort = Integer.toString(Integer.valueOf(nextToNextNode) * 2);
-                Log.e(TAG, "In Query: sending to replica2 port" + nextToNextNode + " and the key is" + selection);
-                new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, forwardQueryToGetVote3);*/
 
             synchronized (this) {
-
-                // lock.lock();
 
                 highestVersion = 0;
 
@@ -587,11 +461,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                 //highestVersion = 0;
                 // Log.e(TAG, "Timer over:" + System.currentTimeMillis() + " for the key" + selection + " keyval is " + ConvertCursorToString(globalCursor));
                 SystemClock.sleep(2000);
-             /*       if((!KeyValPairsSeen.containsKey(universalKey)) && KeyValPairsInserted.containsKey(selection) && tempCur!=null){
-                        Log.e(TAG,"Too early, im giving my temp results"+universalKey+"KeyVal is"+ConvertCursorToString(tempCur));
-                        KeyValPairsInserted.remove(selection);
-                        return tempCur;
-                    }*/
                 if (JustIn.containsKey(universalKey)) {
                     String tempKV = universalKey + "," + JustIn.get(universalKey);
 
@@ -601,10 +470,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                     return globalCursorForParticularOutside;
                 } else {
                     Log.e(TAG, "Situation after wait for the key" + universalKey + "!KeyValPairsSeen.containsKey(universalKey) " + !KeyValPairsSeen.containsKey(universalKey) + "Gotallvotes" + gotAllVotes);
-                 /*      if(!keyToNumberOfVotesSoFar.containsKey(universalKey)){
-                           Log.e(TAG,"Still does not have any replies");
-                           SystemClock.sleep(2000);
-                       }*/
                     while(!keyToNumberOfVotesSoFar.containsKey(universalKey)){
 
                     }
@@ -617,18 +482,13 @@ public class SimpleDynamoProvider extends ContentProvider {
                     String tempKV = universalKey + "," + KeyValPairsSeen.get(universalKey);
 
                     globalCursorForParticularOutside = convertMapToCursorForKeyVal(convertStringToMapForKeyVal(tempKV));
-               /*     gotAllVotes = true;
-                    while (gotAllVotes) {
 
-
-                    }*/
-                    //SystemClock.sleep(500);
                     Log.e(TAG, "Got results for key:" + universalKey + "keyval is: " + ConvertCursorToStringForKeyVal(globalCursorForParticularOutside));
                     return globalCursorForParticularOutside;
 
                 }
             }
-            //}
+
 
         } catch (NoSuchAlgorithmException e) {
 
@@ -639,7 +499,7 @@ public class SimpleDynamoProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        // TODO Auto-generated method stub
+
         return 0;
     }
 
@@ -653,7 +513,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                 Log.e(TAG,"Inside server task");
                 ServerSocket serverSocket = sockets[0];
 
-                //  serverSocket.setReuseAddress(true);
 
             /*
              *  Fill in your server code that receives messages and passes them
@@ -669,7 +528,6 @@ public class SimpleDynamoProvider extends ContentProvider {
 
 
                     Object received = ois.readObject();
-                    //ois.close();
 
                     Log.e(TAG, "readObject");
 
@@ -714,12 +572,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                         Log.e(TAG, "TYPE: 3 keySelection: " + keySelection);
 
                         String results = fetchQueryResults(keySelection);
-                  /*      if (results.isEmpty()) {
-                            Log.e(TAG, "Results were empty, wait started!" + keySelection);
-                            SystemClock.sleep(2000);
-                            Log.e(TAG, "Results were empty, wait done!" + keySelection);
-                            results = fetchQueryResults(keySelection);
-                        }*/
 
                         Log.e(TAG, "TYPE: 3 results: " + results);
 
@@ -731,20 +583,17 @@ public class SimpleDynamoProvider extends ContentProvider {
                         myVote.queryResponse = results;
                         //key,value,version
                         myVote.queryResponseVersion = getVersion(keySelection);
-                        //myVote.queryResponseVersion = 0;
+
                         Log.e(TAG, "TYPE: 3 Sending myVote: " + myVote.queryResponse + " from AVD:" + myPort);
 
-                       // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, myVote);
+                        // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, myVote);
                         new Thread(new ClientThread(myVote)).start();
                     }
 
                     //You are the coordinator and you got a vote
                     if (receivedMessage.type == 4) {
                         Log.e(TAG, "Inside Type 4" + receivedMessage.queryResponse + "For the key:" + receivedMessage.selection + "Response version: " + receivedMessage.queryResponseVersion);
-                       /* if(isRecoveredFully && !keyToNumberOfVotesSoFar.containsKey(receivedMessage.selection)) {
-                            Log.e(TAG,"Cleared JustIn"+receivedMessage.selection);
-                            JustIn.clear();
-                        }*/
+
                         if (receivedMessage.queryResponse.isEmpty() || receivedMessage.queryResponse==null) {
                             Log.e(TAG, "Inside Type 4 isEmpty" + receivedMessage.queryResponse + "For the key:" + receivedMessage.selection);
                             if (keyToNumberOfVotesSoFar.containsKey(receivedMessage.selection)) {
@@ -845,8 +694,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                         myAllRecords.type = 6;
                         myAllRecords.queryResponse = results;
 
-                        // Log.e(TAG, "TYPE: 5 Sending myVote: " + myAllRecords.queryResponse);
-                       // new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, myAllRecords);
                         new Thread(new ClientThread(myAllRecords)).start();
                     }
 
@@ -870,10 +717,9 @@ public class SimpleDynamoProvider extends ContentProvider {
                             time = 0;
                             intermediateAllResults = intermediateAllResults + receivedMessage.queryResponse;
                             globalCursor = convertMapToCursorForKeyVal(convertStringToMapForKeyVal(intermediateAllResults));
-                            //voteCount = 0;
                             intermediateAllResults = "";
                             Log.e(TAG, "Got all VOTES for * : and the final result is");
-                            // gotAllVotes = false;
+
 
                         }
 
@@ -892,25 +738,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                     if (receivedMessage.type == 9) {
 
                         new RecoveryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, receivedMessage);
-/*                        Log.e(TAG, "TYPE: 9 Received! I need to send my results to this AVD so that it recovers: " + receivedMessage.OriginPort);
-                        String keySelection = receivedMessage.selection;
-                        Log.e(TAG, "TYPE: 9 keySelection: " + keySelection);
-
-                        String tempResults = fetchAllRecords(keySelection);
-                        String results = filterKeyValues(tempResults, receivedMessage.OriginPort);
-                        Log.e(TAG, "TYPE: 9 key selection is" + keySelection + "results from:" + portStr + " filtered results total: " + results);
-                        // Log.e(TAG, "TYPE: 5 results: " + results);
-
-                        Message myAllRecords = new Message();
-                        myAllRecords.selection = keySelection;
-                        myAllRecords.OriginPort = myPort;
-                        myAllRecords.sendPort = receivedMessage.queryOrigin;
-                        myAllRecords.type = 10;
-                        myAllRecords.queryResponse = results;
-
-                        // Log.e(TAG, "TYPE: 5 Sending myVote: " + myAllRecords.queryResponse);
-                        //new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, myAllRecords);
-                        new Thread(new ClientThread(myAllRecords)).start();*/
 
                     }
 
@@ -920,53 +747,23 @@ public class SimpleDynamoProvider extends ContentProvider {
                         Log.e(TAG, "Type: 10 Received messages to recover!" + receivedMessage.OriginPort + "Response:" + receivedMessage.queryResponse + "Vote number out of 3:" + voteCount1);
                         // String filterRecords = filterKeyValues(receivedMessage.queryResponse, receivedMessage.OriginPort);
 
-                       // boolean isInserted = insertFilteredValues(receivedMessage.queryResponse);
+                        // boolean isInserted = insertFilteredValues(receivedMessage.queryResponse);
                         new InsertMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, receivedMessage);
-                      //  new Thread(new InsertThread(receivedMessage.queryResponse)).start();
 
                         voteCount1++;
                         if (voteCount1 >= 3) {
                             isRecoveredFully = true;
-                            //voteCount1 = 0;
                         }
                     }
 
                     if (receivedMessage.type == 11) {
                         new QueryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, receivedMessage);
-/*                        if (receivedMessage.selection.equals("\"@\"")) {
-
-                            Log.e(TAG, "TYPE: 11 Received for @");
-                            if(!isRecoveredFully){
-                                Log.e(TAG, "TYPE: 11 sleeping");
-                                SystemClock.sleep(1500);
-                                Log.e(TAG, "TYPE: 11 sleeping done, is recovered fully"+isRecoveredFully);
-                            }
-
-                            String keySelection = receivedMessage.selection;
-                            Log.e(TAG, "TYPE: 11 keySelection: " + keySelection);
-
-
-                            String tempResults = fetchAllRecords(keySelection);
-                            String results = filterKeyValues(tempResults, receivedMessage.OriginPort);
-                            Log.e(TAG, "TYPE: 11 key selection is" + keySelection + "results from:" + portStr + " are total: " + results);
-                            // Log.e(TAG, "TYPE: 5 results: " + results);
-
-                            Message myAllRecords = new Message();
-                            myAllRecords.selection = keySelection;
-                            myAllRecords.OriginPort = myPort;
-                            myAllRecords.sendPort = receivedMessage.queryOrigin;
-                            myAllRecords.type = 12;
-                            myAllRecords.queryResponse = results;
-                            //new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, myAllRecords);
-                            new Thread(new ClientThread(myAllRecords)).start();
-                        }*/
                     }
 
 
                     if (receivedMessage.type == 12) {
                         Log.e(TAG, "TYPE: 12 Received for @");
                         voteCount++;
-                      //  new Thread(new RecoveryInsertThread(receivedMessage.queryResponse)).start();
 
                         if (receivedMessage.selection.equals("\"@\"")) {
                             Log.e(TAG, "TYPE: 12 Received for @, We got results from " + receivedMessage.OriginPort);
@@ -974,9 +771,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                             if (voteCount < 2) {
                                 Log.e(TAG, "TYPE: 12 less than 2 voteCount= " + voteCount);
                                 intermediateAllResults = intermediateAllResults + receivedMessage.queryResponse;
-                                // globalCursor = convertMapToCursorForKeyVal(convertStringToMapForKeyVal(intermediateAllResults));
-                                // Log.e(TAG, "Added results for : " + receivedMessage.OriginPort + "Total is now: " + intermediateAllResults);
-
                             }
 
                             if (voteCount >= 2) {
@@ -985,7 +779,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                                 globalCursor = convertMapToCursorForKeyVal(convertStringToMapForKeyVal(intermediateAllResults));
 
                                 Log.e(TAG, "Got all VOTES for @ : and the final result is" + ConvertCursorToStringForKeyVal(globalCursor));
-                                // gotAllVotes = false;
 
                             }
                         }
@@ -1012,14 +805,11 @@ public class SimpleDynamoProvider extends ContentProvider {
         @Override
         protected Void doInBackground(Message... msg) {
             try {
-                /*
-                 * TODO: Fill in your client code that sends out a message.
-                 */
+
                 Log.e(TAG, "In MessageClientTask, the msg[0] details are: type" + msg[0].type + "The key is: " + msg[0].selection + "Port is" + msg[0].OriginPort + "Sending this to" + msg[0].sendPort);
                 Socket socket = new Socket(InetAddress.getByAddress(new byte[]{10, 0, 2, 2}),
                         Integer.parseInt(msg[0].sendPort));
-                // socket.setSoTimeout(100);
-                //Log.e(TAG, "Now requesting to join the ring from " + msg[0].myPort + "this is send to " + msg[0].sendPort);
+
                 OutputStream os = socket.getOutputStream();
                 ObjectOutputStream msgObject = new ObjectOutputStream(os);
                 msgObject.writeObject(msg[0]);
@@ -1104,7 +894,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                 String tempResults = fetchAllRecords(keySelection);
                 String results = filterKeyValues(tempResults, receivedMessage.OriginPort);
                 Log.e(TAG, "TYPE: 11 key selection is" + keySelection + "results from:" + portStr + " are total: " + results);
-                // Log.e(TAG, "TYPE: 5 results: " + results);
 
                 Message myAllRecords = new Message();
                 myAllRecords.selection = keySelection;
@@ -1112,7 +901,6 @@ public class SimpleDynamoProvider extends ContentProvider {
                 myAllRecords.sendPort = receivedMessage.queryOrigin;
                 myAllRecords.type = 12;
                 myAllRecords.queryResponse = results;
-                //new MessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, myAllRecords);
                 new Thread(new ClientThread(myAllRecords)).start();
             }
             return null;
@@ -1623,9 +1411,6 @@ public class SimpleDynamoProvider extends ContentProvider {
             //  Log.e(TAG, "lin: " + lin);
             if (lin.contains(",")) {
                 String[] keyValue = lin.split(",");
-/*                for (String i : keyValue) {
-                    Log.e(TAG, "keyValue split into" + i);
-                }*/
 
                 map.put(keyValue[0].trim(), keyValue[1].trim());
 
@@ -1645,8 +1430,6 @@ public class SimpleDynamoProvider extends ContentProvider {
             while (true) {
                 int keyIndex = resultCursor.getColumnIndex(ID);
                 int valueIndex = resultCursor.getColumnIndex(MESSAGE);
-                // int versionIndex = resultCursor.getColumnIndex("version");
-                // Log.e(TAG, "KeyIndex is:" + keyIndex + "ValueIndex is: " + valueIndex);
 
                 if (keyIndex == -1 || valueIndex == -1) {
                     Log.e(TAG, "Dude, something went wrong while converting cursor to string");
@@ -1759,7 +1542,7 @@ public class SimpleDynamoProvider extends ContentProvider {
                 Log.e(TAG, "In Recovery mode function: sending to all ports:" + fetchAllResultFromReplica1.sendPort + " and the key is" + fetchAllResultFromReplica1.selection);
 
                 new Thread(new ClientThread(fetchAllResultFromReplica1)).start();
-               // new RecoveryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, fetchAllResultFromReplica1);
+                // new RecoveryMessageClientTask().executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, fetchAllResultFromReplica1);
             }
         }
 
