@@ -1,0 +1,1 @@
+/home/amair/AndroidStudioProjects/SimpleDynamo/app/build/intermediates/classes/debug
